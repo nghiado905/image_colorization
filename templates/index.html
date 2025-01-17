@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Ảnh</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1f1f1f; /* Nền xám đậm nhưng mềm hơn */
+            color: #f2f2f2; /* Chữ màu trắng sáng hơn */
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #ff99cc; /* Hồng nhạt sáng hơn cho tiêu đề */
+        }
+
+        form {
+            background-color: #2a2a2a; /* Màu nền form xám đậm hơn */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Bóng tối vừa phải */
+            padding: 30px;
+            max-width: 400px;
+            margin: 0 auto;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        form:hover {
+            transform: scale(1.03);
+        }
+
+        input[type="file"] {
+            font-size: 1em;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ff99cc; /* Đường viền màu hồng sáng */
+            background-color: #333333; /* Màu nền input xám trung bình */
+            color: #f2f2f2;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #ff66b2; /* Nút bấm màu hồng tươi */
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ff4d94; /* Nút bấm đậm hơn khi hover */
+        }
+
+        #result {
+            display: none;
+            margin-top: 30px;
+        }
+
+        img {
+            margin-top: 20px;
+            max-width: 50%; /* Giảm kích thước xuống 50% chiều rộng của container */
+            height: auto; /* Tự động điều chỉnh chiều cao theo tỷ lệ */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Bóng tối đậm */
+            border-radius: 8px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.6s ease, transform 0.3s ease;
+        }
+
+        img.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #loader {
+            display: none;
+            margin: 20px auto;
+            border: 6px solid #2a2a2a; /* Loader viền xám đậm */
+            border-radius: 50%;
+            border-top: 6px solid #ff66b2; /* Loader viền trên hồng đậm */
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Tải Lên Ảnh Để Tô Màu</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Tải lên</button>
+    </form>
+
+    <div id="loader"></div>
+
+    <div id="result">
+        <h2>Ảnh Gốc:</h2>
+        <img id="originalImage" src="" alt="Ảnh Gốc">
+        <h2>Ảnh Đã Tô Màu:</h2>
+        <img id="predictedImage" src="" alt="Ảnh Đã Tô Màu">
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            document.getElementById('loader').style.display = 'block';
+            const formData = new FormData(this);
+            
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            document.getElementById('loader').style.display = 'none';
+            
+            if (data.photo_url && data.prediction_url) {
+                const originalImage = document.getElementById('originalImage');
+                const predictedImage = document.getElementById('predictedImage');
+                
+                originalImage.src = data.photo_url;
+                predictedImage.src = data.prediction_url;
+                
+                document.getElementById('result').style.display = 'block';
+                originalImage.classList.add('show');
+                predictedImage.classList.add('show');
+            } else {
+                alert(data.error || 'Có lỗi xảy ra!');
+            }
+        };
+    </script>
+</body>
+</html>
